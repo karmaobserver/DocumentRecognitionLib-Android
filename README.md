@@ -13,6 +13,7 @@ allprojects {
 	repositories {
 		...
 		maven { url 'https://jitpack.io' }
+		maven { url  "http://dl.bintray.com/steveliles/maven" }
 	}
 }
 ```
