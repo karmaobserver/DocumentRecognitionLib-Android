@@ -21,13 +21,13 @@
 
         <ImageView
             android:id="@+id/imageThresholdTolerance"
-            android:layout_width="400dp"
-            android:layout_height="500dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <ImageView
             android:id="@+id/imageThresholdOTSU"
-            android:layout_width="400dp"
-            android:layout_height="500dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 
