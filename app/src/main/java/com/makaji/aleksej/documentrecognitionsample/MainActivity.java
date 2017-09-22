@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         InputStream inputstream = null;
 
         try {
-            inputstream = getApplicationContext().getAssets().open(DATASET_NAME + "/" + getApplicationContext().getAssets().list(DATASET_NAME)[1]);
+            inputstream = getApplicationContext().getAssets().open(DATASET_NAME + "/" + getApplicationContext().getAssets().list(DATASET_NAME)[0]);
         } catch (IOException e) {
             e.printStackTrace();
         }
