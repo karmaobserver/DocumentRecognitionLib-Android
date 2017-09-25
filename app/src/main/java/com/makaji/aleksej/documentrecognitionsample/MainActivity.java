@@ -93,8 +93,6 @@ public class MainActivity extends AppCompatActivity {
         processedMat = documentDetector.detectAndPrepareDocument(imageMat, 210, 40.0f, 1);
         convertMatToBitmapAndDrawImages(processedMat, imageMat);
 
-        //ha
-
     }
 
     private Mat getImageMat() {

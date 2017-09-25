@@ -32,6 +32,8 @@ import java.util.List;
 
 import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
 import static org.opencv.core.Core.countNonZero;
+import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_MEAN_C;
+import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 
 /**
  * Created by Aleksej on 9/21/2017.
@@ -233,12 +235,14 @@ public class DocumentDetector {
         Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
         Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
-        // Apply threshold to convert to binary image.
-        // Using Otsu algorithm to choose the optimal threshold value to convert the processed image to binary image.
-        Mat thresholdWithMorphMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
+        Mat thresholdWithMeanC = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
+        /*
         Imgproc.threshold(grayMat, thresholdWithMorphMat, 0.0, 255.0, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+        */
 
-        return thresholdWithMorphMat;
+        Imgproc.adaptiveThreshold(grayMat, thresholdWithMeanC, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 3, 16);
+
+        return thresholdWithMeanC;
     }
 
 
