@@ -32,6 +32,7 @@ import java.util.List;
 
 import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
 import static org.opencv.core.Core.countNonZero;
+import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_MEAN_C;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 
@@ -236,11 +237,12 @@ public class DocumentDetector {
         Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
         Mat thresholdWithMeanC = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
+
         /*
         Imgproc.threshold(grayMat, thresholdWithMorphMat, 0.0, 255.0, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
         */
 
-        Imgproc.adaptiveThreshold(grayMat, thresholdWithMeanC, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 3, 16);
+        Imgproc.adaptiveThreshold(grayMat, thresholdWithMeanC, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 3, 16);
 
         return thresholdWithMeanC;
     }
