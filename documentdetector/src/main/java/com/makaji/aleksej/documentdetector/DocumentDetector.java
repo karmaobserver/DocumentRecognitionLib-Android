@@ -242,6 +242,7 @@ public class DocumentDetector {
         Imgproc.threshold(grayMat, thresholdWithMorphMat, 0.0, 255.0, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
         */
 
+        //Gaussian method ~ 0.5 s
         Imgproc.adaptiveThreshold(grayMat, thresholdWithGaussian, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 12);
 
         return thresholdWithGaussian;
