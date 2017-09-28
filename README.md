@@ -1,8 +1,8 @@
 # DocumentRecognitionLibrary
 
 ## Pre-requisites
-- Android SDK 26
-- Android Build Tools v26.0.1
+- Android SDK 24
+- Android Build Tools v25.0.0
 
 ## How to install
 To get a Git project into your build: 
@@ -21,7 +21,7 @@ allprojects {
 - Step 2. Add the dependency </br>
 ```
 dependencies {
-	compile 'com.github.karmaobserver:DocumentRecognitionLib-Android:0.1.0'
+	compile 'com.github.karmaobserver:DocumentRecognitionLib-Android:0.1.6'
 }	
 ```
 
