@@ -236,15 +236,15 @@ public class DocumentDetector {
         Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
         Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
-        Mat thresholdWithMeanC = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
+        Mat thresholdWithGaussian = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
 
         /*
         Imgproc.threshold(grayMat, thresholdWithMorphMat, 0.0, 255.0, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
         */
 
-        Imgproc.adaptiveThreshold(grayMat, thresholdWithMeanC, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 3, 16);
+        Imgproc.adaptiveThreshold(grayMat, thresholdWithGaussian, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 12);
 
-        return thresholdWithMeanC;
+        return thresholdWithGaussian;
     }
 
 
