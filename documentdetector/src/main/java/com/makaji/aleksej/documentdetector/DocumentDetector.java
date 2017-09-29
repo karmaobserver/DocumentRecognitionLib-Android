@@ -56,48 +56,6 @@ public class DocumentDetector {
     Context context;
 
     /**
-     * Detect document, if it is a document, prepare it for OCR otherwise make smooth Image.
-     *
-     * @param originalMat   Mat which should be processed
-     * @param tolerance     Tolerance which will be used as threshold
-     * @param percentage    Percentage which defines how many white pixels needs to be contained in document to be valid document
-     * @param regions       Regions number which defines how many regions needs to be contained in document to be valid document
-     *
-     * @return resultMat    which is prepared for OCR in case Mat is a document, otherwise return Mat as smoothed image.
-     *
-     */
-    public Mat detectAndPrepareDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions) {
-
-        Mat resultMat;
-
-        // check if the image is document
-        if (detectDocument(originalMat, tolerance, percentage, regions)) {
-
-            // if the image is document, prepare document for OCR
-            resultMat = prepareDocumentForOCR(originalMat);
-        } else {
-
-            // if the image is not document, prepare smooth image
-            resultMat = prepareSmoothImage(originalMat);
-        }
-
-        return resultMat;
-    }
-
-
-    /**
-     * Smooth image
-     *
-     * @param originalMat
-     *
-     * @return originalMat
-     */
-    private Mat prepareSmoothImage(Mat originalMat) {
-        //TODO: make algorithm for making smooth image if it is not a document
-        return originalMat;
-    }
-
-    /**
      * Detects if the image is document or picture
      *
      * Suggested values for parameters:
@@ -293,7 +251,7 @@ public class DocumentDetector {
      * @param originalMat
      * @return thresholdWithGaussian
      */
-    private Mat prepareDocumentForOCR(Mat originalMat) {
+    public Mat prepareDocumentForOCR(Mat originalMat) {
 
         // convert to gray
         Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
