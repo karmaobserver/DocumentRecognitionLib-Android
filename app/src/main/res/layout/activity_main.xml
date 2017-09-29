@@ -7,28 +7,4 @@
     android:orientation="vertical"
     tools:context="com.makaji.aleksej.documentrecognitionsample.MainActivity">
 
-    <Button
-        android:id="@+id/detectAndPrepare"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Detect and prepare document" />
-
-    <LinearLayout
-        android:id="@+id/images"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/imageThresholdTolerance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <ImageView
-            android:id="@+id/imageThresholdOTSU"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
 </LinearLayout>
