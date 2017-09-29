@@ -34,16 +34,21 @@ import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
 import static org.opencv.core.Core.countNonZero;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_MEAN_C;
+import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
+import static org.opencv.imgproc.Imgproc.getStructuringElement;
 
 /**
- * Created by Aleksej on 9/21/2017.
+ *  Detect whether provided image is document or picture;
+ *  if the image is a document, it prepares it for OCR
+ *
  */
-
 @EBean
 public class DocumentDetector {
 
-    private static final int PREFERRED_SIZE = 800;
+    // define maximum border size of the provided image
+    // if a border is larger than defined value, image is scaled
+    private static final int PREFERRED_SIZE = 1000;
 
     private static final String TAG = "DocumentDetector";
 
@@ -53,63 +58,78 @@ public class DocumentDetector {
     /**
      * Detect document, if it is a document, prepare it for OCR otherwise make smooth Image.
      *
-     * @param originalMat Mat which should be processed
-     * @param tolerance   Tolerance which will be used as threshold
-     * @param percentage  Percentage which defines how many white pixels needs to be contained in document to be valid document
-     * @param regions     Regions number which defines how many regions needs to be contained in document to be valid document
-     * @return Mat which is prepared for OCR in case Mat is a document, otherwise return MAT as smooth Image.
+     * @param originalMat   Mat which should be processed
+     * @param tolerance     Tolerance which will be used as threshold
+     * @param percentage    Percentage which defines how many white pixels needs to be contained in document to be valid document
+     * @param regions       Regions number which defines how many regions needs to be contained in document to be valid document
+     *
+     * @return resultMat    which is prepared for OCR in case Mat is a document, otherwise return Mat as smoothed image.
+     *
      */
     public Mat detectAndPrepareDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions) {
 
         Mat resultMat;
 
-        //Check if image is document
+        // check if the image is document
         if (detectDocument(originalMat, tolerance, percentage, regions)) {
 
-            //If image is document, prepare document for OCR
+            // if the image is document, prepare document for OCR
             resultMat = prepareDocumentForOCR(originalMat);
         } else {
 
-            //If image is not document, prepare smooth image
+            // if the image is not document, prepare smooth image
             resultMat = prepareSmoothImage(originalMat);
         }
 
         return resultMat;
     }
 
+
+    /**
+     * Smooth image
+     *
+     * @param originalMat
+     *
+     * @return originalMat
+     */
     private Mat prepareSmoothImage(Mat originalMat) {
-        //TODO: make alogrithm for making smooth image if it is not a document
+        //TODO: make algorithm for making smooth image if it is not a document
         return originalMat;
     }
 
     /**
-     * Detect if Image is an document.
+     * Detects if the image is document or picture
      *
-     * @param originalMat Mat which should be processed
-     * @return True if it is document, else false
+     * Suggested values for parameters:
+     *
+     * @param originalMat   original Mat object
+     * @param tolerance     threshold value for converting gray scale image to binary image
+     *                      suggested value for this parameter: 100
+     * @param percentage    minimum percentage of white pixels that image needs to have to be a document
+     *                      suggested value for this parameter: 40f
+     * @param regions       minimum number of regions that image needs to have to be a document
+     *                      suggested value for this parameter: 82
+     *
+     * @return True if the image is document, False otherwise
      */
     public boolean detectDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions) {
 
         boolean isWhite;
 
-        // Convert to gray
-        Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
-        Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
+        Mat grayMat = convertToGrayImage(originalMat);
 
-        //checks image size and scale it if necessary
+        // check image size and scale it if necessary
         grayMat = checkImageSize(grayMat);
 
-        //Apply threshold to convert to binary image.
-        Mat thresholdMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
-        Imgproc.threshold(grayMat, thresholdMat, tolerance, 255, Imgproc.THRESH_BINARY);
+        Mat thresholdMat = convertToBinaryImage(grayMat, tolerance);
 
         int whitePixels = countNonZero(thresholdMat);
         int blackPixels = thresholdMat.cols() * thresholdMat.rows() - whitePixels;
 
-        //check if white pixels are more then 40%
         int pixels = blackPixels + whitePixels;
-        int pixelsPercentage = (int) (pixels * (percentage / 100.0f));
+        int pixelsPercentage = (int) (pixels * (percentage * 1.0/ 100.0f));
 
+        // check if the number of white pixels is greater than provided percentage
         if (pixelsPercentage < whitePixels) {
             isWhite = true;
             Log.d(TAG, "There are more then " + percentage + "% white pixels");
@@ -118,55 +138,25 @@ public class DocumentDetector {
             return false;
         }
 
-        //Apply Morphological Gradient.
-        Mat morphMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
-        Mat morphStructure = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(3, 3));
-        Imgproc.morphologyEx(grayMat, morphMat, Imgproc.MORPH_GRADIENT, morphStructure);
+        Mat morphMat = applyMorphologicalGradient(grayMat);
 
-        // Apply threshold to convert to binary image.
-        // Using Otsu algorithm to choose the optimal threshold value to convert the processed image to binary image.
-        Mat thresholdWithMorphMat = new Mat(thresholdMat.cols(), thresholdMat.rows(), CvType.CV_8U, new Scalar(1));
-        Imgproc.threshold(morphMat, thresholdWithMorphMat, 0.0, 255.0, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+        // using Gaussian algorithm to choose the optimal threshold value to convert the processed image to binary image.
+        Mat thresholdWithMorphMat = convertImageUsingAdaptiveThreshold(thresholdMat, morphMat);
 
-        //Apply Closing Morphological Transformation
-        Mat morphClosingMat = new Mat(thresholdMat.cols(), thresholdMat.rows(), CvType.CV_8U, new Scalar(1));
-        morphStructure = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(15, 1));
-        Imgproc.morphologyEx(thresholdWithMorphMat, morphClosingMat, Imgproc.MORPH_CLOSE, morphStructure);
+        // apply Closing Morphological Transformation
+        Mat morphClosingMat = applyClosingMorphologicalTransformation(thresholdWithMorphMat);
 
         List<MatOfPoint> contours = new ArrayList<>();
 
         Mat hierarchy = new Mat();
 
-        //Find contours
+        // find contours
         Imgproc.findContours(morphClosingMat, contours, hierarchy, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE, new Point(0, 0));
 
         Log.d(TAG, "Number of Regions: " + contours.size());
 
-        //If we want to draw rectangles on image. (If we scaling picture, make sure you draw on correct image)
-        /*if (drawRegions) {
-
-            Mat mask = Mat.zeros(thresholdWithMorphMat.size(), CvType.CV_8UC1);
-
-            for (int idx = 0; idx < contours.size(); idx++) {
-
-                Rect rect = Imgproc.boundingRect(contours.get(idx));
-
-                Mat maskROI = new Mat(mask, rect);
-
-                maskROI.setTo(new Scalar(0, 0, 0));
-
-                //takes 1-2 ms per contour
-                Imgproc.drawContours(mask, contours, idx, new Scalar(255, 255, 255), Core.FILLED);
-
-                double r = (double) Core.countNonZero(maskROI) / (rect.width * rect.height);
-
-                if (r > .45 && (rect.height > 8 && rect.width > 8)) {
-                    Imgproc.rectangle(originalMat, rect.br(), new Point(rect.br().x - rect.width, rect.br().y - rect.height), new Scalar(20, 4, 201));
-                }
-            }
-        }*/
-
-        //If there are more white pixels as defined and if there are more contours as defined, return true as valid document
+        // if there are more white pixels than defined and if there are more contours than defined,
+        // return true: provided image is document; return false otherwise
         if (isWhite && contours.size() > regions) {
             return true;
         } else {
@@ -174,10 +164,85 @@ public class DocumentDetector {
         }
     }
 
+
     /**
-     * Check if the picture should be scaled
+     * Converts original image to gray
      *
-     * @param imageMat Mat which will be scaled
+     * @param originalMat
+     * @return grayMat
+     */
+    private Mat convertToGrayImage(Mat originalMat) {
+        Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
+        Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
+
+        return grayMat;
+    }
+
+
+    /**
+     * Converts image to Binary image using given tolerance
+     *
+     * @param grayMat           given Mat object
+     * @param tolerance         threshold value for converting grayMat to binary mat
+     * @return  thresholdMat    converted Mat object
+     */
+    private Mat convertToBinaryImage(Mat grayMat, Integer tolerance) {
+        Mat thresholdMat = new Mat(grayMat.cols(), grayMat.rows(), CvType.CV_8U, new Scalar(1));
+        Imgproc.threshold(grayMat, thresholdMat, tolerance, 255, Imgproc.THRESH_BINARY);
+
+        return thresholdMat;
+    }
+
+    /**
+     * Applies Morphological Gradient on given Mat object
+     *
+     * @param grayMat
+     * @return  morphMat
+     */
+    private Mat applyMorphologicalGradient(Mat grayMat) {
+
+        Mat morphMat = new Mat(grayMat.cols(), grayMat.rows(), CvType.CV_8U, new Scalar(1));
+        Mat morphStructure = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(3, 3));
+        Imgproc.morphologyEx(grayMat, morphMat, Imgproc.MORPH_GRADIENT, morphStructure);
+
+        return morphMat;
+    }
+
+    /**
+     * Applies adaptive threshold on given Mat object using Gaussian method
+     *
+     * @param thresholdMat
+     * @param morphMat
+     * @return  thresholdWithMorphMat
+     */
+    private Mat convertImageUsingAdaptiveThreshold(Mat thresholdMat, Mat morphMat) {
+        Mat thresholdWithMorphMat = new Mat(thresholdMat.cols(), thresholdMat.rows(), CvType.CV_8U, new Scalar(1));
+        Imgproc.adaptiveThreshold(morphMat, thresholdWithMorphMat, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 12);
+
+        return thresholdWithMorphMat;
+    }
+
+    /**
+     * Applies Closing Morphological Transformation on the given Mat object
+     *
+     * @param thresholdWithMorphMat
+     * @return morphClosingMat
+     */
+    private Mat applyClosingMorphologicalTransformation(Mat thresholdWithMorphMat) {
+        Mat morphClosingMat = new Mat(thresholdWithMorphMat.cols(), thresholdWithMorphMat.rows(), CvType.CV_8U, new Scalar(1));
+        Mat morphStructure = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(15, 1));
+        Imgproc.morphologyEx(thresholdWithMorphMat, morphClosingMat, Imgproc.MORPH_CLOSE, morphStructure);
+
+        return morphClosingMat;
+    }
+
+
+    /**
+     * Checks if the image should be scaled and resize it if necessary
+     *
+     * @param imageMat
+     * @return retVal       returns scaled image if resizing was necessary,
+     * otherwise returns imageMat
      */
     private Mat checkImageSize(Mat imageMat) {
 
@@ -196,16 +261,16 @@ public class DocumentDetector {
     }
 
     /**
-     * Picture scaling - if at least one picture's dimension is bigger than PREFERRED_SIZE,
-     * the picture will be scaled
+     * Scales provided image to the predefined size
      *
-     * @param imageMat Mat which will be scaled
+     * @param imageMat Mat object to be scaled
+     * @return Mat object of scaled image
      */
     private Mat scalePicture(Mat imageMat) {
 
         int pictureWidth = imageMat.width();
         int pictureHeight = imageMat.height();
-        double scale;
+        double scale = 0.0;
 
         if (pictureWidth >= pictureHeight) {
             scale = PREFERRED_SIZE * 1.0 / pictureWidth;
@@ -220,34 +285,29 @@ public class DocumentDetector {
         Imgproc.resize(imageMat, destination, szResized, 0, 0, Imgproc.INTER_LINEAR);
 
         return destination;
-
     }
 
     /**
-     * Prepare document for OCR.
-     * Convert Mat to gray then do threshold based on OTSU algorithm.
+     * Prepares document for OCR.
      *
-     * @param originalMat Original Mat
-     * @return Transformed Mat
+     * @param originalMat
+     * @return thresholdWithGaussian
      */
     private Mat prepareDocumentForOCR(Mat originalMat) {
 
-        // Convert to gray
+        // convert to gray
         Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
         Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
         Mat thresholdWithGaussian = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
 
-        /*
-        Imgproc.threshold(grayMat, thresholdWithMorphMat, 0.0, 255.0, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
-        */
-
-        //Gaussian method ~ 0.5 s
+        // apply Gaussian method
         Imgproc.adaptiveThreshold(grayMat, thresholdWithGaussian, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 12);
+
+        Imgproc.dilate(thresholdWithGaussian, thresholdWithGaussian, getStructuringElement(MORPH_ELLIPSE, new Size(2, 2)));
+
+        Imgproc.erode(thresholdWithGaussian, thresholdWithGaussian, getStructuringElement(MORPH_ELLIPSE, new Size(2, 2)));
 
         return thresholdWithGaussian;
     }
-
-
 }
-
