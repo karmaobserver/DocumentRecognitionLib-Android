@@ -1,41 +1,26 @@
 package com.makaji.aleksej.documentdetector;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Region;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
-import android.util.TimingLogger;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Core;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
 import static org.opencv.core.Core.countNonZero;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_MEAN_C;
 import static org.opencv.imgproc.Imgproc.MORPH_DILATE;
-import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 import static org.opencv.imgproc.Imgproc.getStructuringElement;
 
