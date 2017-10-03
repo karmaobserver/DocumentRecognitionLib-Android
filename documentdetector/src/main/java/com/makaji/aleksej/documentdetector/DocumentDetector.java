@@ -34,6 +34,7 @@ import static org.opencv.android.LoaderCallbackInterface.SUCCESS;
 import static org.opencv.core.Core.countNonZero;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C;
 import static org.opencv.imgproc.Imgproc.ADAPTIVE_THRESH_MEAN_C;
+import static org.opencv.imgproc.Imgproc.MORPH_DILATE;
 import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 import static org.opencv.imgproc.Imgproc.getStructuringElement;
@@ -54,6 +55,21 @@ public class DocumentDetector {
 
     @RootContext
     Context context;
+
+
+    /**
+     * Converts original image to gray
+     *
+     * @param originalMat
+     * @return grayMat
+     */
+    private Mat convertToGrayImage(Mat originalMat) {
+        Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
+        Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
+
+        return grayMat;
+    }
+
 
     /**
      * Detects if the image is document or picture
@@ -120,20 +136,6 @@ public class DocumentDetector {
         } else {
             return false;
         }
-    }
-
-
-    /**
-     * Converts original image to gray
-     *
-     * @param originalMat
-     * @return grayMat
-     */
-    private Mat convertToGrayImage(Mat originalMat) {
-        Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
-        Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
-
-        return grayMat;
     }
 
 
@@ -257,15 +259,15 @@ public class DocumentDetector {
         Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
         Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_RGB2GRAY, 1);
 
-        Mat thresholdWithGaussian = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
+        Mat thresholdWithMean = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
 
-        // apply Gaussian method
-        Imgproc.adaptiveThreshold(grayMat, thresholdWithGaussian, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 21, 12);
+        // apply Mean method
+        Imgproc.adaptiveThreshold(grayMat, thresholdWithMean, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 201, 24);
 
-        Imgproc.dilate(thresholdWithGaussian, thresholdWithGaussian, getStructuringElement(MORPH_ELLIPSE, new Size(2, 2)));
+        Imgproc.erode(thresholdWithMean, thresholdWithMean, getStructuringElement(MORPH_DILATE, new Size(2, 2)));
 
-        Imgproc.erode(thresholdWithGaussian, thresholdWithGaussian, getStructuringElement(MORPH_ELLIPSE, new Size(2, 2)));
+        Imgproc.dilate(thresholdWithMean, thresholdWithMean, getStructuringElement(MORPH_DILATE, new Size(2, 2)));
 
-        return thresholdWithGaussian;
+        return thresholdWithMean;
     }
 }
