@@ -2,6 +2,7 @@ package com.makaji.aleksej.documentdetector;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
@@ -232,6 +233,26 @@ public class DocumentDetector {
         return destination;
     }
 
+
+    /**
+     * Calculates percentage of white pixels in image
+     *
+     * @param grayMat
+     * @return  pixelPercentage
+     */
+    private int getPixelsPercentage(Mat grayMat) {
+
+        Mat thresholdMat = convertToBinaryImage(grayMat, 100);
+
+        int whitePixels = countNonZero(thresholdMat);
+        int pixels = thresholdMat.cols() * thresholdMat.rows();
+
+        int pixelsPercentage = (int) (whitePixels * 1.0/pixels * 100);
+
+        return pixelsPercentage;
+    }
+
+
     /**
      * Prepares document for OCR.
      *
@@ -246,8 +267,16 @@ public class DocumentDetector {
 
         Mat thresholdWithMean = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
 
-        // apply Mean method
-        Imgproc.adaptiveThreshold(grayMat, thresholdWithMean, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 201, 24);
+        Mat scaledMat = scalePicture(grayMat);
+
+        // percentage of white pixels
+        int pixels = getPixelsPercentage(scaledMat);
+
+        if (pixels < 60) {
+            Imgproc.adaptiveThreshold(grayMat, thresholdWithMean, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 201, 24);
+        } else {
+            Imgproc.adaptiveThreshold(grayMat, thresholdWithMean, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 41, 18);
+        }
 
         Imgproc.erode(thresholdWithMean, thresholdWithMean, getStructuringElement(MORPH_DILATE, new Size(2, 2)));
 
