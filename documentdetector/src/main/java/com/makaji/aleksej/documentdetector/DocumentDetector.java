@@ -11,6 +11,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -47,7 +48,7 @@ public class DocumentDetector {
      * Converts original image to gray
      *
      * @param originalMat
-     * @return grayMat
+     * @return converted Mat object
      */
     private Mat convertToGrayImage(Mat originalMat) {
         Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
@@ -60,15 +61,14 @@ public class DocumentDetector {
     /**
      * Detects if the image is document or picture
      *
-     * Suggested values for parameters:
      *
-     * @param originalMat   original Mat object
-     * @param tolerance     threshold value for converting gray scale image to binary image
-     *                      suggested value for this parameter: 100
-     * @param percentage    minimum percentage of white pixels that image needs to have to be a document
-     *                      suggested value for this parameter: 40f
-     * @param regions       minimum number of regions that image needs to have to be a document
-     *                      suggested value for this parameter: 82
+     * @param originalMat   Original Mat object
+     * @param tolerance     Threshold value for converting gray scale image to binary image
+     *                      Suggested value for this parameter: 100
+     * @param percentage    Minimum percentage of white pixels that image needs to have to be a document
+     *                      Suggested value for this parameter: 40f
+     * @param regions       Minimum number of regions that image needs to have to be a document
+     *                      Suggested value for this parameter: 30
      *
      * @return True if the image is document, False otherwise
      */
@@ -128,9 +128,9 @@ public class DocumentDetector {
     /**
      * Converts image to Binary image using given tolerance
      *
-     * @param grayMat           given Mat object
-     * @param tolerance         threshold value for converting grayMat to binary mat
-     * @return  thresholdMat    converted Mat object
+     * @param grayMat       Given Mat object
+     * @param tolerance     Threshold value for converting grayMat to binary mat
+     * @return              Converted Mat object
      */
     private Mat convertToBinaryImage(Mat grayMat, Integer tolerance) {
         Mat thresholdMat = new Mat(grayMat.cols(), grayMat.rows(), CvType.CV_8U, new Scalar(1));
@@ -140,10 +140,10 @@ public class DocumentDetector {
     }
 
     /**
-     * Applies Morphological Gradient on given Mat object
+     * Applies Morphological Gradient on given Mat object.
      *
      * @param grayMat
-     * @return  morphMat
+     * @return          Edited grayMat.
      */
     private Mat applyMorphologicalGradient(Mat grayMat) {
 
@@ -155,11 +155,11 @@ public class DocumentDetector {
     }
 
     /**
-     * Applies adaptive threshold on given Mat object using Gaussian method
+     * Applies adaptive threshold on given Mat object using Gaussian method.
      *
      * @param thresholdMat
      * @param morphMat
-     * @return  thresholdWithMorphMat
+     * @return  Mat object
      */
     private Mat convertImageUsingAdaptiveThreshold(Mat thresholdMat, Mat morphMat) {
         Mat thresholdWithMorphMat = new Mat(thresholdMat.cols(), thresholdMat.rows(), CvType.CV_8U, new Scalar(1));
@@ -169,10 +169,10 @@ public class DocumentDetector {
     }
 
     /**
-     * Applies Closing Morphological Transformation on the given Mat object
+     * Applies Closing Morphological Transformation on the given Mat object.
      *
      * @param thresholdWithMorphMat
-     * @return morphClosingMat
+     * @return  Morph closing Mat object
      */
     private Mat applyClosingMorphologicalTransformation(Mat thresholdWithMorphMat) {
         Mat morphClosingMat = new Mat(thresholdWithMorphMat.cols(), thresholdWithMorphMat.rows(), CvType.CV_8U, new Scalar(1));
@@ -184,11 +184,11 @@ public class DocumentDetector {
 
 
     /**
-     * Checks if the image should be scaled and resize it if necessary
+     * Checks if the image should be scaled and resize it if necessary.
      *
      * @param imageMat
-     * @return retVal       returns scaled image if resizing was necessary,
-     * otherwise returns imageMat
+     * @return retVal       Returns scaled image if resizing was necessary,
+     *                      otherwise returns imageMat
      */
     private Mat checkImageSize(Mat imageMat) {
 
@@ -209,8 +209,8 @@ public class DocumentDetector {
     /**
      * Scales provided image to the predefined size
      *
-     * @param imageMat Mat object to be scaled
-     * @return Mat object of scaled image
+     * @param imageMat      Mat object to be scaled
+     * @return              Mat object of scaled image
      */
     private Mat scalePicture(Mat imageMat) {
 
@@ -238,7 +238,7 @@ public class DocumentDetector {
      * Calculates percentage of white pixels in image
      *
      * @param grayMat
-     * @return  pixelPercentage
+     * @return  Percentage of white pixels in image
      */
     private int getPixelsPercentage(Mat grayMat) {
 
@@ -254,12 +254,17 @@ public class DocumentDetector {
 
 
     /**
-     * Prepares document for OCR.
+     * Prepares image for OCR
      *
      * @param originalMat
-     * @return thresholdWithGaussian
+     * @param whiteBorderPercentage     Suggested value for this parameter: 2
+     * @param givenImagePrecision       Image clearness; allowed values for this parameter:
+     *                                  0 - 16  ( 0 - for the images with low contrast, 16 - for the
+     *                                  images with high contrast )
+     *                                  Suggested value for this parameter: 16
+     * @return  Image prepared for OCR
      */
-    public Mat prepareDocumentForOCR(Mat originalMat) {
+    public Mat prepareDocumentForOCR(Mat originalMat, int whiteBorderPercentage, int givenImagePrecision) {
 
         // convert to gray
         Mat grayMat = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
@@ -267,11 +272,57 @@ public class DocumentDetector {
 
         Mat thresholdWithMean = new Mat(originalMat.cols(), originalMat.rows(), CvType.CV_8U, new Scalar(1));
 
-        Imgproc.adaptiveThreshold(grayMat, thresholdWithMean, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 201, 24);
+        // one of changeable parameters for adaptive threshold method
+        int imagePrecision = 41 + givenImagePrecision * 10;
 
+        if (imagePrecision > 201) {
+            imagePrecision = 201;
+        }
+
+        if (imagePrecision < 41) {
+            imagePrecision = 41;
+        }
+
+        int imageClearness = 8 + givenImagePrecision;
+
+        Imgproc.adaptiveThreshold(grayMat, thresholdWithMean, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, imagePrecision, imageClearness);
+
+        // add white frame over the image to remove noise on edges
+        thresholdWithMean = addFrameOverImage(thresholdWithMean, whiteBorderPercentage);
+
+        // removing noise in image
         Imgproc.erode(thresholdWithMean, thresholdWithMean, getStructuringElement(MORPH_DILATE, new Size(2, 2)));
 
         Imgproc.dilate(thresholdWithMean, thresholdWithMean, getStructuringElement(MORPH_DILATE, new Size(2, 2)));
+
+        return thresholdWithMean;
+    }
+
+    /**
+     * Adds white frame over the image to remove noise on its edges
+     *
+     * @param thresholdWithMean
+     * @param whiteBorderPercentage
+     * @return Edited image
+     */
+    private Mat addFrameOverImage(Mat thresholdWithMean, int whiteBorderPercentage) {
+
+        // we need the length of the longer edge to calculate the thickness for image frame
+        int longerEdge = thresholdWithMean.rows();
+
+        if (thresholdWithMean.rows() < thresholdWithMean.cols()) {
+            longerEdge = thresholdWithMean.cols();
+        }
+
+        // width of the frame (in pixels)
+        int width = (int) (longerEdge * whiteBorderPercentage / 100);
+
+        // white color
+        Scalar color = new Scalar(255);
+        Rect border = new Rect(new Point(0, 0), thresholdWithMean.size());
+
+        // we put frame over the image to remove noise on its borders
+        Imgproc.rectangle(thresholdWithMean, border.tl(), border.br(), color, width);
 
         return thresholdWithMean;
     }
