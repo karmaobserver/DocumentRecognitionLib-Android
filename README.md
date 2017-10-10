@@ -43,6 +43,8 @@ dependencies {
 | @param regions  | Regions number which defines how many regions needs to be contained in the image to be valid document.  |
 | @return  | boolean True if provided Mat object is document, False otherwise.  |
 
+| Method |
+| ------------- |
 |Mat prepareDocumentForOCR(Mat originalMat, int whiteBorderPercentage, int givenImagePrecision)  |
 
 | Method Description|
@@ -53,9 +55,7 @@ dependencies {
 | ------------- | ------------- |
 | @param originalMat  | Mat which should be processed.  |
 | @param whiteBorderPercentage  | Defines the size of the frame. Suggested value for this parameter: 2  |
-| @param givenImagePrecision  | Image clearness; allowed values for this parameter: 0 - 16  
-		                ( 0 - for the images with low contrast, 16 - for the images with high contrast )
-                                Suggested value for this parameter: 16  |
+| @param givenImagePrecision  | Image clearness; allowed values for this parameter: 0 - 16 ( 0 - for the images with low contrast, 16 - for the images with high contrast ) Suggested value for this parameter: 16  |
 | @return  | Image prepared for OCR. |
 
 ## License
