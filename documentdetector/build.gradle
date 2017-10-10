@@ -36,7 +36,13 @@ dependencies {
     apt "org.androidannotations:androidannotations:$AAVersion"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
 
+
+    // if documentdetector is included in project as a module,
+    // delete next line and uncomment the line beneath it
     compile 'org.opencv:OpenCV-Android:3.1.0'
+
+    // compile project(':openCVLibrary330')
+
 
     compile 'com.android.support:appcompat-v7:25.3.1'
 
