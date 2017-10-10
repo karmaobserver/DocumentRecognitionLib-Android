@@ -29,11 +29,11 @@ dependencies {
 
 | Method |
 | ------------- |
-|boolean detectDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions)                                  |
+|boolean detectDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions)  |
 
-| Method Description                                                                                                            |
+| Method Description  |
 | ------------- |
-| Detects if the provided image is document or picture.                                                                         |
+| Detects if the provided image is document or picture.  |
 
 | Param  | Description |
 | ------------- | ------------- |
@@ -45,11 +45,11 @@ dependencies {
 
 | Method |
 | ------------- |
-|Mat prepareDocumentForOCR(Mat originalMat, int whiteBorderPercentage, int givenImagePrecision)                                 |
+|Mat prepareDocumentForOCR(Mat originalMat, int whiteBorderPercentage, int givenImagePrecision)  |
 
-| Method Description                                                                                                            |
+| Method Description |
 | ------------- |
-| Prepares provided Mat object for OCR.                                                                                         |
+| Prepares provided Mat object for OCR. |
 
 | Param  | Description |
 | ------------- | ------------- |
