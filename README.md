@@ -29,27 +29,27 @@ dependencies {
 
 | Method |
 | ------------- |
-|boolean detectDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions)  |
+|boolean detectDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions)                                  |
 
-| Method Description|
+| Method Description                                                                                                            |
 | ------------- |
-| Detects if the provided image is document or picture.  |
+| Detects if the provided image is document or picture.                                                                         |
 
 | Param  | Description |
 | ------------- | ------------- |
-| @param originalMat  | Mat which should be processed.  |
+| @param originalMat  | Mat object which should be processed.  |
 | @param tolerance  | Tolerance which will be used as threshold.  |
 | @param percentage  | Percentage which defines how many white pixels needs to be contained in the image to be valid document.  |
 | @param regions  | Regions number which defines how many regions needs to be contained in the image to be valid document.  |
-| @return  | boolean True if provided Mat object is document, False otherwise.  |
+| @return  | True if provided Mat object is document, False otherwise.  |
 
 | Method |
 | ------------- |
-|Mat prepareDocumentForOCR(Mat originalMat, int whiteBorderPercentage, int givenImagePrecision)  |
+|Mat prepareDocumentForOCR(Mat originalMat, int whiteBorderPercentage, int givenImagePrecision)                                 |
 
-| Method Description|
+| Method Description                                                                                                            |
 | ------------- |
-| Prepares provided Mat object for OCR.  |
+| Prepares provided Mat object for OCR.                                                                                         |
 
 | Param  | Description |
 | ------------- | ------------- |
