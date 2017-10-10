@@ -1,8 +1,8 @@
 # DocumentRecognitionLibrary
 
 ## Pre-requisites
-- Android SDK 24
-- Android Build Tools v25.0.0
+- Android SDK 25
+- Android Build Tools v25.0.3
 
 ## How to install
 To get a Git project into your build: 
@@ -29,19 +29,34 @@ dependencies {
 
 | Method |
 | ------------- |
-| Mat detectAndPrepareDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions)  |
+|boolean detectDocument(Mat originalMat, Integer tolerance, Float percentage, Integer regions)  |
 
 | Method Description|
 | ------------- |
-| Detect document, if it is a document, prepare it for OCR otherwise make smooth Image.  |
+| Detects if the provided image is document or picture.  |
 
 | Param  | Description |
 | ------------- | ------------- |
 | @param originalMat  | Mat which should be processed.  |
 | @param tolerance  | Tolerance which will be used as threshold.  |
-| @param percentage  | Percentage which defines how many white pixels needs to be contained in document to be valid document.  |
-| @param regions  | Regions number which defines how many regions needs to be contained in document to be valid document.  |
-| @return  | Mat which is prepared for OCR in case Mat is a document, else MAT as smooth Image.  |
+| @param percentage  | Percentage which defines how many white pixels needs to be contained in the image to be valid document.  |
+| @param regions  | Regions number which defines how many regions needs to be contained in the image to be valid document.  |
+| @return  | boolean True if provided Mat object is document, False otherwise.  |
+
+|Mat prepareDocumentForOCR(Mat originalMat, int whiteBorderPercentage, int givenImagePrecision)  |
+
+| Method Description|
+| ------------- |
+| Prepares provided Mat object for OCR.  |
+
+| Param  | Description |
+| ------------- | ------------- |
+| @param originalMat  | Mat which should be processed.  |
+| @param whiteBorderPercentage  | Defines the size of the frame. Suggested value for this parameter: 2  |
+| @param givenImagePrecision  | Image clearness; allowed values for this parameter: 0 - 16  
+		                ( 0 - for the images with low contrast, 16 - for the images with high contrast )
+                                Suggested value for this parameter: 16  |
+| @return  | Image prepared for OCR. |
 
 ## License
 This project is licensed under the MIT License - see the LICENSE.md file for details
