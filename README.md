@@ -21,7 +21,7 @@ allprojects {
 - Step 2. Add the dependency </br>
 ```
 dependencies {
-	compile 'com.github.karmaobserver:DocumentRecognitionLib-Android:0.1.7'
+	compile 'com.github.karmaobserver:DocumentRecognitionLib-Android:1.0.7'
 }	
 ```
 
